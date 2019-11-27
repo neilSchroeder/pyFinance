@@ -1,6 +1,7 @@
 import datetime as dt
-import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as plt
 from matplotlib import style
+import numpy as np
 import pandas as pd
 import pandas_datareader.data as web
 import bs4 as bs
@@ -9,7 +10,7 @@ import requests
 import os
 
 
-#style.use('ggplot')
+style.use('ggplot')
 
 #start = dt.datetime(2000,1,1)
 #end = dt.datetime(2019,11,24)
@@ -59,15 +60,17 @@ def getYahooData(reload_sp500 = False):
 #getYahooData()
 
 def compileData():
-    with open("pickle/sp500tickers.pckle", "rb") as f:
+    with open("pickle/sp500tickers.pickle", "rb") as f:
         tickers = pickle.load(f)
 
     main_df = pd.DataFrame()
 
     for count,ticker in enumerate(tickers):
-        df = pd.read_csv('stock_dfs/{}.csv'.format(ticker))
-        df.set_index('Date', inplace=True)
-        df.rename(columns = {'Adj Close',ticker}, inplace=True)
+        if ticker.find("."):
+            ticker = ticker.replace(".","-")
+        df = pd.read_csv('data/{}.csv'.format(ticker))
+        df.set_index('Date',inplace=True)
+        df.rename(columns = {'Adj Close':ticker}, inplace = True)
         df.drop(['Open','High','Low','Close','Volume'], 1, inplace=True)
 
         if main_df.empty:
@@ -81,4 +84,33 @@ def compileData():
     print(main_df.head())
     main_df.to_csv('data/sp500_joinedClose.csv')
 
-compileData()
+#compileData()
+
+def visualizeData():
+    df = pd.read_csv('data/sp500_joinedClose.csv')
+    df_corr = df.corr()
+
+    data = df_corr.values
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+
+    heatmap = ax.pcolor(data, cmap=plt.cm.RdYlGn)
+    fig.colorbar(heatmap)
+    ax.set_xticks(np.arange(data.shape[0])+0.5, minor = False )
+    ax.set_yticks(np.arange(data.shape[1])+0.5, minor = False )
+    ax.invert_yaxis()
+    ax.xaxis.tick_top()
+
+    column_labels = df_corr.columns
+    row_labels = df_corr.index
+
+    ax.set_xticklabels(column_labels)
+    ax.set_yticklabels(row_labels)
+    plt.xticks(rotation=90)
+    heatmap.set_clim(-1,1)
+    plt.tight_layout()
+    plt.show()
+
+
+visualizeData()
