@@ -26,7 +26,7 @@ def saveSp500Tickers():
         ticker = row.findAll('td')[0].text
         tickers.append(ticker.strip())
 
-    with open('sp500tickers.pickle','wb') as f:
+    with open('pickle/sp500tickers.pickle','wb') as f:
         pickle.dump(tickers, f)
 
     print(tickers)
@@ -40,7 +40,7 @@ def getYahooData(reload_sp500 = False):
     if reload_sp500:
         tickers = saveSp500Tickers()
     else:
-        with open("sp500tickers.pickle","rb") as f:
+        with open("pickle/sp500tickers.pickle","rb") as f:
             tickers = pickle.load(f)
 
     start = dt.datetime(2000,1,1)
@@ -56,4 +56,29 @@ def getYahooData(reload_sp500 = False):
         else:
             print('Already have {}'.format(ticker))
 
-getYahooData()
+#getYahooData()
+
+def compileData():
+    with open("pickle/sp500tickers.pckle", "rb") as f:
+        tickers = pickle.load(f)
+
+    main_df = pd.DataFrame()
+
+    for count,ticker in enumerate(tickers):
+        df = pd.read_csv('stock_dfs/{}.csv'.format(ticker))
+        df.set_index('Date', inplace=True)
+        df.rename(columns = {'Adj Close',ticker}, inplace=True)
+        df.drop(['Open','High','Low','Close','Volume'], 1, inplace=True)
+
+        if main_df.empty:
+            main_df = df
+        else:
+            main_df = main_df.join(df, how='outer')
+
+        if count % 10 == 0:
+            print(count)
+
+    print(main_df.head())
+    main_df.to_csv('data/sp500_joinedClose.csv')
+
+compileData()
