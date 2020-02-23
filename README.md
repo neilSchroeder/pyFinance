@@ -1,26 +1,26 @@
 # pyFinance
 An attempt at using machine learning to determine when to by and sell S&amp;P 500 stocks.
 
-##Strategy
+## Strategy
 By using a number of indicators, and avoiding coarse daily information,
  the algorithm will attempt to classify the data into whether the data will move above, 
  stay within, or fall below the current price by x% over the next 7 days. I'll be tuning 
  x%, possibly per stock, for performance of the network.
 
-##Network
-   Current I'm using a pretty simple voting classifier setup out of skLearn. The networks
+## Network
+   Currently I'm using a pretty simple voting classifier setup out of skLearn. The networks
    I'm considering, but don't always use, are 
-   `[('lsvc', svm.LinearSVC()),
-      ('nsvc', svm.NuSVC()),
-      ('knn', neighbors.KNeighborsClassifier()),
-      ('rfc', RandomForestClassifier(max_depth=5, n_estimators=50, random_state=1)),
-      ('gnb', GaussianNB()),
-      ('log', LogisticRegression(random_state=1)),
-      ('gpc', GaussianProcessClassifier(1.0* RBF(1.0))),
-      ('dtc', DecisionTreeClassifier(max_depth=5)),
-      ('mlp', MLPClassifier(alpha=1, max_iter=1000)),
-      ('ada', AdaBoostClassifier()),
-      ('qda', QuadraticDiscriminantAnalysis())]`
+   - ('lsvc', svm.LinearSVC())
+   - ('nsvc', svm.NuSVC())
+   - ('knn', neighbors.KNeighborsClassifier())
+   - ('rfc', RandomForestClassifier(max_depth=5, n_estimators=50, random_state=1))
+   - ('gnb', GaussianNB())
+   - ('log', LogisticRegression(random_state=1))
+   - ('gpc', GaussianProcessClassifier(1.0* RBF(1.0)))
+   - ('dtc', DecisionTreeClassifier(max_depth=5))
+   - ('mlp', MLPClassifier(alpha=1, max_iter=1000))
+   - ('ada', AdaBoostClassifier())
+   - ('qda', QuadraticDiscriminantAnalysis())
 
 # Indicators/Features
 A list of current and future indicators and features to be used in the training of the dataset
