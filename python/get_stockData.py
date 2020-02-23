@@ -84,7 +84,33 @@ def compileData_joinedClose():
     print(main_df.head())
     main_df.to_csv('data/sp500_joinedClose.csv')
 
-#compileData()
+def compileData_typicalPrice():
+    with open("pickle/sp500tickers.pickle", "rb") as f:
+        tickers = pickle.load(f)
+
+    main_df = pd.DataFrame()
+
+    for count,ticker in enumerate(tickers):
+        if ticker.find("."):
+            ticker = ticker.replace(".","-")
+        df = pd.read_csv('data/{}.csv'.format(ticker))
+        df.set_index('Date',inplace=True)
+        typPrice = []
+        for index,row in df.iterrows():
+            typPrice.append((row['High']+row['Close']+row['Low'])/3.)
+        df[ticker] = np.array(typPrice)
+        df.drop(['Open','Adj Close','High','Low','Volume','Close'], 1, inplace=True)
+
+        if main_df.empty:
+            main_df = df
+        else:
+            main_df = main_df.join(df, how='outer')
+
+        if count % 10 == 0:
+            print(count)
+
+    print(main_df.head())
+    main_df.to_csv('data/sp500_typicalPrice.csv')
 
 def visualizeData():
     df = pd.read_csv('data/sp500_joinedClose.csv')
@@ -112,7 +138,8 @@ def visualizeData():
     plt.tight_layout()
     plt.show()
 
-saveSp500Tickers()
-getYahooData()
-compileData_joinedClose()
-visualizeData()
+#saveSp500Tickers()
+#getYahooData()
+#compileData_joinedClose()
+compileData_typicalPrice()
+#visualizeData()

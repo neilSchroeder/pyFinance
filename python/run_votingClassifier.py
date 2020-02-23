@@ -22,16 +22,17 @@ def machineLearn(ticker):
     drop_cols = []
     keep_cols = []
     for colName, col in this_mlProfile.df.iteritems():
-        if colName.find('_x') != -1:
-            if colName.find(ticker) == -1: drop_cols.append(colName)
-            else: keep_cols.append(colName)
-        elif colName.find('_y') != -1:
+        if colName.find(ticker) == -1:
             drop_cols.append(colName)
         else:
-            keep_cols.append(colName)
+            if colName.find('_x') != -1 and colName.find('_y') != -1:
+                drop_cols.append(colName)
+            else:
+                keep_cols.append(colName)
+
+    for name in keep_cols: print(name)
 
     this_mlProfile.df.drop(columns=drop_cols, inplace=True)
-    this_mlProfile.df.plot(y = 'MMM_7DayPctChange')
     #make the target
     target_df = pd.DataFrame()
     y = []
@@ -69,17 +70,17 @@ def machineLearn(ticker):
 
     clf = VotingClassifier(
             estimators=[
-                        ('lsvc', svm.LinearSVC()),
+                        #('lsvc', svm.LinearSVC()),
                         #('nsvc', svm.NuSVC()),
-                        ('knn', neighbors.KNeighborsClassifier()),
+                        #('knn', neighbors.KNeighborsClassifier()),
                         ('rfc', RandomForestClassifier(max_depth=5, n_estimators=50, random_state=1)),
-                        #('gnb', GaussianNB()),
-                        #('log', LogisticRegression(random_state=1)),
-                        #('gpc', GaussianProcessClassifier(1.0* RBF(1.0))),
+                        ('gnb', GaussianNB()),
+                        ('log', LogisticRegression(random_state=1)),
+                        ('gpc', GaussianProcessClassifier(1.0* RBF(1.0))),
                         #('dtc', DecisionTreeClassifier(max_depth=5)),
-                        #('mlp', MLPClassifier(alpha=1, max_iter=1000)),
-                        #('ada', AdaBoostClassifier()),
-                        #('qda', QuadraticDiscriminantAnalysis())
+                        ('mlp', MLPClassifier(alpha=1, max_iter=1000)),
+                        ('ada', AdaBoostClassifier()),
+                        ('qda', QuadraticDiscriminantAnalysis())
                         ],
             voting='hard')
 

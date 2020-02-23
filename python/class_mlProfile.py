@@ -33,11 +33,11 @@ class mlProfile:
         #McClellan Oscillator
         #see README.md or features.py for more details
         #note: no ticker is provided because this is calculated over the entrie S&P 500
-        df_temp = f.getFeature_McClellanOscillator()
+        df_temp = f.getFeature_McClellanOscillator(ticker)
         use_cols =  df_temp.columns.difference(self.df)
         self.df = pd.merge(self.df, df_temp[use_cols], left_index=True, right_index=True, how='outer')
         #Bollinger Bands:
         #see README.md or features.py for more details
-        #df_temp = f.getFeature_BollingerBands(ticker)
-        #use_cols =  df_temp.columns.difference(self.df)
-        #self.df = pd.merge(self.df, df_temp[use_cols], left_index=True, right_index=True, how='outer')
+        df_temp = f.getFeature_BollingerBands(ticker)
+        use_cols =  df_temp.columns.difference(self.df)
+        self.df = pd.merge(self.df, df_temp[use_cols], left_index=True, right_index=True, how='outer')

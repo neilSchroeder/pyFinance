@@ -41,6 +41,36 @@ def get_MA(ticker, days):
 
     return df
 
+def get_MA(ticker, df, days):
+    weights = np.repeat(1., days)/days
+    tickers = df.columns.values.tolist()
+    df.fillna(0, inplace=True)
+    z = np.convolve(df[ticker],weights)[:len(df[ticker])]
+    z[:days] = z[days]
+    df['{}_{}DayMA'.format(ticker,days)] = z
+    df.fillna(0,inplace=True)
+
+    return df
+
+def get_StdDev(ticker, df, days, nDeviations):
+    tickers = df.columns.values.tolist()
+    df.fillna(0, inplace=True)
+    zp = []
+    zm = []
+    for i,val in enumerate(df[ticker]):
+        if i > int(days):
+            zp.append(nDeviations*np.std(df[ticker][i-days:i+1]))
+            zm.append(-1 * nDeviations*np.std(df[ticker][i-days:i+1]))
+        else:
+            zp.append(0.)
+            zm.append(0.)
+
+    df['{}_{}Day_{}StdDevs'.format(ticker,days,nDeviations)] = np.array(zp)
+    df['{}_{}Day_{}StdDevs'.format(ticker,days,-1*nDeviations)] = np.array(zm)
+    df.fillna(0,inplace=True)
+
+    return df
+
 def get_EMA(ticker, days):
     weights = np.exp(np.linspace(-1.,0., days))
     weights /= weights.sum()
@@ -131,7 +161,7 @@ def getFeature_MACD(ticker):
     return df
 
 
-def get_AdvancesAndDeclines():
+def get_AdvancesAndDeclines(ticker):
     df = pd.read_csv('data/sp500_joinedClose.csv', index_col = 0)
     tickers = df.columns.values.tolist()
     df.fillna(0, inplace=True)
@@ -142,19 +172,19 @@ def get_AdvancesAndDeclines():
         last_rows.append(row)
         advances.append(0)
         declines.append(0)
-        for ticker in tickers:
+        for zicker in tickers:
             if len(last_rows) > 1:
-                if row[ticker] - last_rows[-2][ticker] > 0:
+                if row[zicker] - last_rows[-2][zicker] > 0:
                     advances[-1] += 1
-                elif row[ticker] - last_rows[-2][ticker] < 0:
+                elif row[zicker] - last_rows[-2][zicker] < 0:
                     declines[-1] += 1
 
-    df['advances'] = np.array(advances)
-    df['declines'] = np.array(declines)
+    df['{}_advances'.format(ticker)] = np.array(advances)
+    df['{}_declines'.format(ticker)] = np.array(declines)
     zm = np.array(advances)-np.array(declines)
     zp = np.array(advances)+np.array(declines)
-    df['advMinusDec'] = np.array(advances) - np.array(declines)
-    df['adjNetAdvances'] = np.divide(zm,zp)
+    df['{}_advMinusDec'.format(ticker)] = np.array(advances) - np.array(declines)
+    df['{}_adjNetAdvances'.format(ticker)] = np.divide(zm,zp)
 
     return df
 
@@ -164,12 +194,12 @@ def get_AdvancesAndDeclines():
     the 39 Day EMA of ANA
 """
 
-def getFeature_McClellanOscillator():
+def getFeature_McClellanOscillator(ticker):
     """get the advances and declines"""
-    df = get_AdvancesAndDeclines()
-    df = get_EMAfromTicker('adjNetAdvances', df, 19)
-    df = get_EMAfromTicker('adjNetAdvances', df, 39)
-    df['McClellan'] = df['adjNetAdvances_19DayEMA'] - df['adjNetAdvances_39DayEMA']
+    df = get_AdvancesAndDeclines(ticker)
+    df = get_EMAfromTicker('{}_adjNetAdvances'.format(ticker), df, 19)
+    df = get_EMAfromTicker('{}_adjNetAdvances'.format(ticker), df, 39)
+    df['{}_McClellan'.format(ticker)] = df['{}_adjNetAdvances_19DayEMA'.format(ticker)] - df['{}_adjNetAdvances_39DayEMA'.format(ticker)]
 
     return df
 
@@ -187,5 +217,12 @@ def getFeature_MDICD(ticker):
     df.fillna(0, inplace=True)
     df = df.replace([np.inf, -np.inf], np.nan)
     df.dropna(inplace=True)
+
+    return df
+
+def getFeature_BollingerBands(ticker):
+    df = pd.read_csv('data/sp500_typicalPrice.csv', index_col=0)
+    df = get_MA(ticker, df, 20)
+    df = get_StdDev(ticker, df, 20, 2)
 
     return df
