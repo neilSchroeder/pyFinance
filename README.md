@@ -16,3 +16,4 @@ A list of current and future indicators and features to be used in the training 
   divergence signal. Namely this calculates the MACD using the MDI instead of EMAs.
   Specifically I've implemented a 6 Day MDI - 13 day MDI. I've included some information
   on how the MACD and my MDICD compare.
+5) Bollinger Bands:
